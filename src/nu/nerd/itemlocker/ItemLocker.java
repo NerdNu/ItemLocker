@@ -73,7 +73,7 @@ public class ItemLocker extends JavaPlugin implements Listener {
     // ------------------------------------------------------------------------
     /**
      * Return the WorldGuard plugin.
-     * 
+     *
      * @return the WorldGuard plugin.
      */
     public WorldGuardPlugin getWorldGuard() {
@@ -306,7 +306,7 @@ public class ItemLocker extends JavaPlugin implements Listener {
     /**
      * Record the details of a player placing an armour stand so that the entity
      * can be locked to the player when it spawns.
-     * 
+     *
      * There is no event in the Bukkit API that records which player spawned an
      * armour stand.
      */
@@ -357,7 +357,7 @@ public class ItemLocker extends JavaPlugin implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     protected void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
         Entity entity = event.getRightClicked();
-        if (entity.getType() == EntityType.ITEM_FRAME) {
+        if (entity instanceof ItemFrame) {
             handleInteraction(event);
         }
     }
@@ -382,7 +382,7 @@ public class ItemLocker extends JavaPlugin implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     protected void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
         Entity entity = event.getEntity();
-        if (entity.getType() != EntityType.ITEM_FRAME &&
+        if (!(entity instanceof ItemFrame) &&
             entity.getType() != EntityType.ARMOR_STAND) {
             return;
         }
@@ -415,7 +415,7 @@ public class ItemLocker extends JavaPlugin implements Listener {
     // ------------------------------------------------------------------------
     /**
      * Prevent damage to armour stands by anything that is not a player attack.
-     * 
+     *
      * That includes fire, lava and projectiles. Player attacks are handled in
      * {@link ItemLocker#onEntityDamageByEntity()}.
      */
@@ -441,7 +441,7 @@ public class ItemLocker extends JavaPlugin implements Listener {
      */
     @EventHandler(ignoreCancelled = true)
     protected void onHangingBreakByEntity(HangingBreakByEntityEvent event) {
-        if (event.getEntity().getType() != EntityType.ITEM_FRAME) {
+        if (!(event.getEntity() instanceof ItemFrame)) {
             return;
         }
 
@@ -471,7 +471,7 @@ public class ItemLocker extends JavaPlugin implements Listener {
      */
     @EventHandler(ignoreCancelled = true)
     protected void onHangingBreak(HangingBreakEvent event) {
-        if (event.getEntity().getType() != EntityType.ITEM_FRAME) {
+        if (!(event.getEntity() instanceof ItemFrame)) {
             return;
         }
 
@@ -498,7 +498,7 @@ public class ItemLocker extends JavaPlugin implements Listener {
      */
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     protected void onHangingPlace(HangingPlaceEvent event) {
-        if (event.getEntity().getType() == EntityType.ITEM_FRAME) {
+        if (event.getEntity() instanceof ItemFrame) {
             doLockOnPlace(event.getPlayer(), event.getEntity());
         }
     }
@@ -507,7 +507,7 @@ public class ItemLocker extends JavaPlugin implements Listener {
     /**
      * If a player runs `/ilock` before placing a frame or stand, or if
      * automatic locking is enabled, lock the frame/stand.
-     * 
+     *
      * If auto region locking is enabled, add the most specific region to the
      * lock.
      */
@@ -553,7 +553,7 @@ public class ItemLocker extends JavaPlugin implements Listener {
             if (doRegionInference && regions.size() > 1) {
                 player.sendMessage(ChatColor.GOLD + "Multiple regions exist here: " +
                                    regions.stream().map((r) -> ChatColor.YELLOW + r)
-                                   .collect(Collectors.joining(ChatColor.GOLD + ", ")));
+                                       .collect(Collectors.joining(ChatColor.GOLD + ", ")));
             }
         }
     }
@@ -561,10 +561,10 @@ public class ItemLocker extends JavaPlugin implements Listener {
     // ------------------------------------------------------------------------
     /**
      * Handle players right clicking item frames and armour stands.
-     * 
+     *
      * The player's current command and /ipersist state is extracted from their
      * metadata.
-     * 
+     *
      * For item frames, rotation is distinguished from item access according to
      * whether the frame is empty or not.
      */
@@ -615,12 +615,12 @@ public class ItemLocker extends JavaPlugin implements Listener {
     // ------------------------------------------------------------------------
     /**
      * Perform an action initiated by a command.
-     * 
-     * @param player the player interacting with the ItemFrame.
+     *
+     * @param player    the player interacting with the ItemFrame.
      * @param bypassing true if the player is currently bypassing access
-     *        permission checks.
-     * @param lock the ItemLock.
-     * @param args a map of objects describing the action.
+     *                  permission checks.
+     * @param lock      the ItemLock.
+     * @param args      a map of objects describing the action.
      */
     protected void performCommandAction(Player player, boolean bypassing, ItemLock lock, Map<String, Object> args) {
         String action = (String) args.get("command");
@@ -664,9 +664,9 @@ public class ItemLocker extends JavaPlugin implements Listener {
     /**
      * Lock or modify permissions of a frame or stand and message the player who
      * performed the action.
-     * 
-     * @param player the player creating the lock.
-     * @param lock the lock information.
+     *
+     * @param player      the player creating the lock.
+     * @param lock        the lock information.
      * @param permissions the permissions (must be non-null).
      */
     protected void doLock(Player player, ItemLock lock, PermissionChange permissions) {
@@ -709,11 +709,11 @@ public class ItemLocker extends JavaPlugin implements Listener {
     /**
      * Show a standard error message when a player tries to access a frame or
      * stand that they are not allowed to.
-     * 
+     *
      * @param player the player.
-     * @param verb a word describing the action performed; to be interpolated
-     *        into the message.
-     * @param lock information about the lock.
+     * @param verb   a word describing the action performed; to be interpolated
+     *               into the message.
+     * @param lock   information about the lock.
      */
     protected void accessDeniedMessage(Player player, String verb, ItemLock lock) {
         player.sendMessage(ChatColor.RED + "You can't " + verb + " that " + lock.getEntityType() + "!");
@@ -725,9 +725,9 @@ public class ItemLocker extends JavaPlugin implements Listener {
     // ------------------------------------------------------------------------
     /**
      * Send a player a message detailing the permission groups of a lock.
-     * 
+     *
      * @param player the player.
-     * @param lock the lock.
+     * @param lock   the lock.
      */
     protected void permissionMessage(Player player, ItemLock lock) {
         StringBuilder s = new StringBuilder();
@@ -741,8 +741,8 @@ public class ItemLocker extends JavaPlugin implements Listener {
     // ------------------------------------------------------------------------
     /**
      * Send a command sender an error message about invalid command arguments.
-     * 
-     * @param sender the command sender.
+     *
+     * @param sender      the command sender.
      * @param commandName the command name.
      */
     protected void invalidArgumentsMessage(CommandSender sender, String commandName) {
@@ -753,9 +753,9 @@ public class ItemLocker extends JavaPlugin implements Listener {
     /**
      * Get a coloured string listing the owner and region name of an owned
      * frame/stand, for use in messages.
-     * 
+     *
      * @param player the player.
-     * @param lock the lock information; must have an owner.
+     * @param lock   the lock information; must have an owner.
      * @return the name of the owner, and region, if applicable.
      */
     protected String getOwnerAndRegionString(Player player, ItemLock lock) {
@@ -771,9 +771,9 @@ public class ItemLocker extends JavaPlugin implements Listener {
     // ------------------------------------------------------------------------
     /**
      * Return a coloured string describing a region name.
-     * 
+     *
      * Rather than omitting the region, a null region is shown as "<none>".
-     * 
+     *
      * @param region the name of the region.
      * @return a description of the region for presentation.
      */
@@ -785,7 +785,7 @@ public class ItemLocker extends JavaPlugin implements Listener {
     // ------------------------------------------------------------------------
     /**
      * Return the WorldGuard RegionManager for the specified Bukkit World.
-     * 
+     *
      * @param world the World.
      * @return the WorldGuard RegionManager for the specified Bukkit World.
      */
@@ -798,11 +798,11 @@ public class ItemLocker extends JavaPlugin implements Listener {
     // ------------------------------------------------------------------------
     /**
      * Compute the names of the most specific WorldGuard regions at a location.
-     * 
+     *
      * If a child region overlaps its parent at a location, then the parent is
      * omitted from the result, since the child includes all the parent's owners
      * and members (and then some).
-     * 
+     *
      * @param loc the location.
      * @return a set of the names of all unrelated (by ancestry) regions at the
      *         location.
@@ -827,11 +827,11 @@ public class ItemLocker extends JavaPlugin implements Listener {
     // ------------------------------------------------------------------------
     /**
      * Return true if the player can currently bypass permission checks.
-     * 
+     *
      * If the player had bypass metadata set and the permission to set it has
      * since been revoked, the metadata is removed. This prevents mods from
      * enabling bypass mode and retaining it when they leave ModMode.
-     * 
+     *
      * @param player the player.
      * @return true if the player can currently bypass permission checks.
      */
@@ -846,9 +846,9 @@ public class ItemLocker extends JavaPlugin implements Listener {
     // ------------------------------------------------------------------------
     /**
      * Get the metadata with the specified key that was set by this plugin.
-     * 
+     *
      * @param holder the holder of the metadata.
-     * @param key the key.
+     * @param key    the key.
      * @return matching metadata that was set by this plugin, or null if not
      *         found.
      */
@@ -905,7 +905,7 @@ public class ItemLocker extends JavaPlugin implements Listener {
     /**
      * List of {@link StandPlacement} details of armour stands, used to work out
      * which player spawned a stand.
-     * 
+     *
      * These are only retained for the brief time between the
      * PlayerInteractEvent where the player places the stand and the subsequent
      * CreatureSpawnEvent when the stand entity spawns.
